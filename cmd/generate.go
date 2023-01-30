@@ -1,34 +1,72 @@
 /*
-Copyright © 2023 NAME HERE <EMAIL ADDRESS>
+Copyright © 2023 NAME HERE <nonsoamadi@aol.com>
 */
 package cmd
 
 import (
+	"bufio"
+	"encoding/base64"
 	"fmt"
+	"io/ioutil"
+	"os"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
 
+var envFile string
+
 // generateCmd represents the generate command
 var generateCmd = &cobra.Command{
 	Use:   "generate",
-	Short: "generates the yaml file with encoded base64 secrets",
-	Long:  `This command generates a yaml file with a kube secret definitions of the .env file parsed and encoded in base64`,
+	Short: "Convert environment variables in a .env file to a Kubernetes secret yaml file",
+	Long:  `This tool converts environment variables in a .env file to a Kubernetes secret yaml file`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("generate called")
+		secret := getSecret(envFile)
+		writeYaml(secret)
 	},
 }
 
 func init() {
+	generateCmd.Flags().StringVarP(&envFile, "file", "f", "", "Path to .env file")
+	generateCmd.MarkFlagRequired("file")
 	rootCmd.AddCommand(generateCmd)
+}
 
-	// Here you will define your flags and configuration settings.
+func getSecret(file string) map[string]string {
+	secret := make(map[string]string)
 
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	//generateCmd.PersistentFlags().String("-g", "", "A help for foo")
+	f, err := os.Open(file)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	defer f.Close()
 
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// generateCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	scanner := bufio.NewScanner(f)
+	for scanner.Scan() {
+		line := scanner.Text()
+		if strings.HasPrefix(line, "#") {
+			continue
+		}
+		kv := strings.SplitN(line, "=", 2)
+		secret[kv[0]] = kv[1]
+	}
+
+	return secret
+}
+
+func writeYaml(secret map[string]string) {
+	yaml := "apiVersion: v1\nkind: Secret\nmetadata:\n  name: mysecret\ntype: Opaque\ndata:\n"
+	for k, v := range secret {
+		encoded := base64.StdEncoding.EncodeToString([]byte(v))
+		yaml += fmt.Sprintf("  %s: %s\n", k, encoded)
+	}
+
+	err := ioutil.WriteFile("secret.yaml", []byte(yaml), 0644)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	fmt.Println("Generated secret yaml file: secret.yaml")
 }
