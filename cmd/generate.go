@@ -7,7 +7,7 @@ import (
 	"bufio"
 	"encoding/base64"
 	"fmt"
-	"io/ioutil"
+	"log"
 	"os"
 	"strings"
 
@@ -38,7 +38,7 @@ func getSecret(file string) map[string]string {
 
 	f, err := os.Open(file)
 	if err != nil {
-		fmt.Println(err)
+		log.Fatal(err)
 		os.Exit(1)
 	}
 	defer f.Close()
@@ -63,10 +63,10 @@ func writeYaml(secret map[string]string) {
 		yaml += fmt.Sprintf("  %s: %s\n", k, encoded)
 	}
 
-	err := ioutil.WriteFile("secret.yaml", []byte(yaml), 0644)
+	err := os.WriteFile("secret.yaml", []byte(yaml), 0644)
 	if err != nil {
-		fmt.Println(err)
+		log.Fatal(err)
 		os.Exit(1)
 	}
-	fmt.Println("Generated secret yaml file: secret.yaml")
+	log.Println("Generated secret yaml file: secret.yaml")
 }
