@@ -9,11 +9,14 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var version = "0.0.1"
+
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "abobi",
-	Short: "An environment variable parser for kube secrets",
-	Long:  `abobi is a CLI application that converts enviroment variables in a .env to a kubernetes secret definition file with values encoded in base64`,
+	Use:     "abobi",
+	Version: version,
+	Short:   "An environment variable parser for kube secrets",
+	Long:    `abobi is a CLI application that converts enviroment variables in a .env to a kubernetes secret definition file with values encoded in base64`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	// Run: func(cmd *cobra.Command, args []string) { },
