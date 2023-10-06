@@ -23,7 +23,7 @@ chmod +x ./abobi
 Move the kubectl binary to a file location on your system `PATH`.
 
 ```bash
-sudo mv ./kubectl /usr/local/bin/abobi
+sudo mv ./abobi /usr/local/bin/abobi
 sudo chown root: /usr/local/bin/abobi
 ```
 
